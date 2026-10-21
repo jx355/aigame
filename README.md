@@ -44,6 +44,8 @@ python -m http.server 8000
 8. **成长**：经验累积、技术债跨局带入、AI 版本随局数递增、解锁轻量修正。
 9. **下一局**：保留 player 状态（经验 / 技术债 / 解锁），换新 seed 继续。
 
+> **随时退出**：除标题屏外，每个界面底部都有常驻的「🏠 退出本局回标题」按钮。点它会弹确认层，确认后放弃本局进度、回到标题重新开始——再也不怕卡在某屏出不去。
+
 ### 四维决策（每个任务独立）
 | 维度 | 选项 | 直觉 |
 |---|---|---|
@@ -71,6 +73,8 @@ python -m http.server 8000
 - **💥 技术债崩盘**：长期重速度且债失控（均债>12、重速度局≥60%）。
 - **🏭 流水线工人**：快但没崩（重速度局≥60%、均债≤8）——活干了，判断力没长。
 - **🌱 觉醒的工匠**：长期偏平衡（平衡局≥50%）——吃过亏后开始重新掂量。
+- **🔥 涅槃重生**：早期被债拖垮、后期翻盘（≥4 局，前两局债高但近两局全成功且质量≥0.6）。
+- **🤖 数字流水线幽灵**：长期重速度且质量低下（≥4 局，重速度≥60% 且均质<0.5）——连"判断"都懒得判断了。
 - **🐣 初出茅庐**：仅玩过 <2 局时的默认结局。
 
 ---
@@ -89,7 +93,9 @@ aigame/
 │     ├─ ui.js             # DOM 渲染与输入收集层：只调 logic、只画 DOM
 │     └─ main.js           # 编排层：串联流程、持有运行时状态、绑定按钮
 └─ docs/
-   ├─ design.md            # 设计文档（本 README 的依据，勿改）
+   ├─ design.md            # 设计文档（首版，九节）
+   ├─ content-expansion.md # 第二轮内容扩充与主题深化设计
+   ├─ test-cases.md        # QA 评审报告
    └─ gameplay.md          # 玩法设计说明（面向玩家，轻快有梗）
 ```
 
@@ -107,14 +113,14 @@ aigame/
 ### 在 data.js 加内容 / 调数值
 文件里每一项都标了 `// 待试玩校准`，对照改即可：
 
-- **加项目卡 / 调规模**：`PROJECT_POOL`（约 55 行，数组，每项 `scale` 取 S/M/L）。
-  规模对应的任务数、预算、缺陷容忍在 `SCALE_CFG`（约 69 行，S/M/L 三档）。
-- **加 agent trait**：`TRAIT_POOL`（约 84 行，7 个，每项含 `name/desc/effect` 六维增量）。
-- **加随机事件**：`EVENT_POOL`（约 97 行，12 个，每项含 `effect` 增量、`weight/chance`、`conditional` 条件事件标记）。
-- **调事件发生概率**：`EVENT_CHANCE`（约 113 行，当前 0.45，单任务掷骰命中才触发）。
-- **调四维数值表**：`STRATEGY_TABLE`（约 18 行，四维度 × 选项 × 六维增量，是平衡的核心旋钮）。
-- **调成长解锁**：`UNLOCKS`（约 149 行，含 `needExp` 阈值与解锁描述）。
-- **调文案**：`NARRATIVE`（时代观察，约 116 行）、`ENDINGS`（多结局，约 124 行）。
+- **加项目卡 / 调规模**：`PROJECT_POOL`（当前 16 个，数组，每项 `scale` 取 S/M/L）。
+  规模对应的任务数、预算、缺陷容忍在 `SCALE_CFG`（S/M/L 三档）。
+- **加 agent trait**：`TRAIT_POOL`（当前 10 个，每项含 `name/desc/effect` 六维增量）。
+- **加随机事件**：`EVENT_POOL`（当前 18 个，每项含 `effect` 增量、`conditional` 条件事件标记）。
+- **调事件发生概率**：`EVENT_CHANCE`（当前 0.45，单任务掷骰命中才触发）。
+- **调四维数值表**：`STRATEGY_TABLE`（四维度 × 选项 × 六维增量，是平衡的核心旋钮）。
+- **调成长解锁**：`UNLOCKS`（含 `needExp` 阈值与解锁描述）。
+- **调文案**：`NARRATIVE`（时代观察，当前 6 条）、`ENDINGS`（多结局，当前 7 个）。
 
 ### 在 logic.js 调规则
 若想改规则而非数值，集中在带注释处：
@@ -130,11 +136,14 @@ aigame/
 
 ## 如何用 node 跑逻辑测试
 
-`logic.js` 是 UMD 包裹：浏览器挂 `window.Logic`，node 下 `module.exports`。QA 已交付回归脚本 `tests/run-tests.js`（41 条断言，覆盖核心循环/同 seed 复现/条件事件/钳制/疲劳/成败/多结局/跨局成长/边界）：
+`logic.js` 是 UMD 包裹：浏览器挂 `window.Logic`，node 下 `module.exports`。QA 已交付两套零依赖回归脚本：
+- `tests/run-tests.js`（当前 **51 条**断言，覆盖核心循环/同 seed 复现/条件事件/钳制/疲劳/成败/多结局/跨局成长/边界/内容扩充），`node tests/run-tests.js`。
+- `tests/ui-flow.test.js`（UI 主流程 8 屏点击 + 每屏常驻退出按钮 + 退出回标题，DOM 桩集成测试），`node tests/ui-flow.test.js`。
 
 ```bash
 # 在 aigame/ 下直接运行（无需安装任何依赖）
 node tests/run-tests.js
+node tests/ui-flow.test.js
 ```
 
 > 注意：直接 `require('./game/js/logic.js')` 时 `GAME_DATA` 不会自动加载（logic.js 有空表兜底），正式测试需在同一个 vm 上下文按 `data.js → logic.js` 顺序加载——`tests/run-tests.js` 已示范该做法。

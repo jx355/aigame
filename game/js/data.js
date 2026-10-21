@@ -62,7 +62,13 @@
     { name: '健身打卡 App',   scale: 'S', clientType: '个人',     hiddenNeed: '无' },
     { name: '供应链中台',     scale: 'L', clientType: '外企',     hiddenNeed: '多系统对接' },
     { name: '活动报名页',     scale: 'S', clientType: '创业公司', hiddenNeed: '无' },
-    { name: '智能客服机器人', scale: 'M', clientType: '外企',     hiddenNeed: '语料质量' }
+    { name: '智能客服机器人', scale: 'M', clientType: '外企',     hiddenNeed: '语料质量' },
+    { name: '微信抽奖小程序', scale: 'S', clientType: '创业公司', hiddenNeed: '防刷与公平性' },
+    { name: '宠物社交相册',   scale: 'S', clientType: '个人',     hiddenNeed: '图片内容审核' },
+    { name: '直播带货后台',   scale: 'M', clientType: '外企',     hiddenNeed: '高并发弹幕' },
+    { name: '社区团购系统',   scale: 'M', clientType: '创业公司', hiddenNeed: '库存准确' },
+    { name: '城市交通调度平台', scale: 'L', clientType: '国企',   hiddenNeed: '实时容灾' },
+    { name: '区块链溯源系统', scale: 'L', clientType: '外企',     hiddenNeed: '密码学正确' }
   ];
 
   // 规模 → 任务数 / 预算(万) / 缺陷容忍阈值
@@ -88,7 +94,10 @@
     { id: 'scholar',     name: '严谨老学究', desc: '慢但极少出错',         effect: { timeline: +0.5, defects: -2, techDebt: 0,  reputation: 0, energy: 0, funds: 0 } }, // 待试玩校准
     { id: 'sycophant',   name: '马屁精',     desc: '顺你意图、不敢质疑',   effect: { timeline: 0,    defects: +1, techDebt: 0,  reputation: +1, energy: 0, funds: 0 } }, // 待试玩校准
     { id: 'lazy',        name: '偷懒鬼',     desc: '能不写就不写',         effect: { timeline: -0.5, defects: +2, techDebt: 0,  reputation: 0, energy: +1, funds: 0 } }, // 待试玩校准
-    { id: 'perfection',  name: '完美主义',   desc: '慢、爱重构',           effect: { timeline: +0.5, defects: 0, techDebt: -2, reputation: 0, energy: 0, funds: 0 } }  // 待试玩校准
+    { id: 'perfection',  name: '完美主义',   desc: '慢、爱重构',           effect: { timeline: +0.5, defects: 0, techDebt: -2, reputation: 0, energy: 0, funds: 0 } }, // 待试玩校准
+    { id: 'amnesiac',    name: '健忘助手',   desc: '长任务易丢需求',       effect: { timeline: 0,    defects: +1, techDebt: 0,  reputation: -1, energy: 0, funds: 0 } }, // 待试玩校准
+    { id: 'frugal',      name: '抠门精算师', desc: '为省 token 砍注释日志', effect: { timeline: 0,    defects: 0,  techDebt: +1, reputation: -1, energy: +1, funds: 0 } }, // 待试玩校准
+    { id: 'imposter',    name: '冒进新人',   desc: '敢用没把握的新技术',   effect: { timeline: +0.5, defects: +1, techDebt: +1, reputation: 0,  energy: 0, funds: 0 } }  // 待试玩校准
   ];
 
   // ===== 随机事件池（12 个，见设计第 5.2 节）=====
@@ -106,7 +115,13 @@
     { id: 'newlang',    name: '新语言/框架流行',  desc: '写测试则收益，否则返工',           effect: { timeline: 0,  defects: 0,  techDebt: 0, reputation: 0,  energy: 0,  funds: 0 }, conditional: true },
     { id: 'checkup',    name: '体检警告',         desc: '过度压榨，精力−',                 effect: { timeline: 0,  defects: 0,  techDebt: 0, reputation: 0,  energy: -3, funds: 0 } },
     { id: 'praise',     name: '用户好评如潮',     desc: '口碑+',                           effect: { timeline: 0,  defects: 0,  techDebt: 0, reputation: +3, energy: 0,  funds: 0 } },
-    { id: 'rival',      name: '竞品抢先发布',     desc: '口碑−（技术债低则缓冲）',         effect: { timeline: 0,  defects: 0,  techDebt: 0, reputation: -2, energy: 0,  funds: 0 }, conditional: true }
+    { id: 'rival',      name: '竞品抢先发布',     desc: '口碑−（技术债低则缓冲）',         effect: { timeline: 0,  defects: 0,  techDebt: 0, reputation: -2, energy: 0,  funds: 0 }, conditional: true },
+    { id: 'reviewoverturn', name: '需求评审被推翻', desc: '方案返工，工期+',               effect: { timeline: +1, defects: 0,  techDebt: 0, reputation: -1, energy: 0,  funds: 0 } },
+    { id: 'ciqueue',    name: 'CI 排队地狱',       desc: '构建耗时，工期+',               effect: { timeline: +1, defects: 0,  techDebt: 0, reputation: 0,  energy: -1, funds: 0 } },
+    { id: 'dephell',    name: '依赖地狱',         desc: '库版本冲突，债+缺陷+',           effect: { timeline: +0.5, defects: +1, techDebt: +1, reputation: 0,  energy: 0,  funds: 0 } },
+    { id: 'usertrial',  name: '客户试用好评',     desc: '口碑+',                         effect: { timeline: 0,  defects: 0,  techDebt: 0, reputation: +2, energy: 0,  funds: 0 } },
+    { id: 'regulation', name: '法规突变',         desc: '合规重做，工期+债+',             effect: { timeline: +1, defects: 0,  techDebt: +1, reputation: 0,  energy: 0,  funds: 0 } },
+    { id: 'techwave',   name: '技术浪潮冲击',     desc: '新范式兴起，口碑−（技术债低则缓冲）', effect: { timeline: 0, defects: 0, techDebt: 0, reputation: -2, energy: 0, funds: 0 }, conditional: true }
   ];
 
   // 单任务触发事件的基准概率（掷骰命中才触发）
@@ -116,7 +131,10 @@
   var NARRATIVE = {
     重速度: '你交付得最快，也最快忘记自己交付了什么。速度成了习惯，判断却悄悄生锈。',
     重质量: '你交付得慢，但每一行都经得起追问。当 AI 写得越来越快，肯慢下来的人反而稀缺。',
-    重平衡: '你在快与稳之间反复掂量。这掂量的功夫，正是 AI 替你写不出、也替你担不了的东西。'
+    重平衡: '你在快与稳之间反复掂量。这掂量的功夫，正是 AI 替你写不出、也替你担不了的东西。',
+    重负债: '技术债像影子跟着你跨局累积。你终于明白：AI 帮你写的每一行快代码，迟早要在某个深夜连本带利还。',
+    重替代: '这一版 AI 又能自动做一件你曾引以为傲的事。你笑着，也有点空——当"写"不再稀缺，你手里还剩什么筹码？',
+    重默契: '连续几局你都稳稳交付。人和 AI 之间有了默契：它写得快，你判得准。这或许就是新时代最值钱的搭档关系。'
   };
 
   // ===== 多结局文案（见设计第 6 节）=====
@@ -141,6 +159,14 @@
     rookie: {
       title: '🐣 初出茅庐',
       text: '你才刚上手这套"AI 副驾"。路还长，先活过下一局再说——记得：省下的每一步，迟早要还。'
+    },
+    phoenix: {
+      title: '🔥 涅槃重生',
+      text: '早期你也曾被技术债拖垮，但后来几局你把节奏找回来了。崩过，才懂怎么不崩——这比一路顺风的人更经打。'
+    },
+    automaton: {
+      title: '🤖 数字流水线幽灵',
+      text: '你交付了很多，也赚到了，但你越来越像流水线上那个只负责按"生成"的人。活儿做了，判断力却悄悄退化——当 AI 什么都能写，你连"判断"都懒得判断了。'
     }
   };
 

@@ -102,6 +102,11 @@
         var lowDebt = context && context.debt != null && context.debt < 5;
         effect.reputation = lowDebt ? -1 : -2;
         note = lowDebt ? '竞品抢发，但你技术领先缓冲了冲击' : '竞品抢发，口碑重挫';
+      } else if (ev.id === 'techwave') {
+        // 技术浪潮：技术债低则缓冲（口碑只-1），否则-2（能力替代焦虑）
+        var lowDebt2 = context && context.debt != null && context.debt < 5;
+        effect.reputation = lowDebt2 ? -1 : -2;
+        note = lowDebt2 ? '技术浪潮来袭，但你底子厚缓冲了冲击' : '技术浪潮来袭，你被甩在身后';
       }
     }
     return { id: ev.id, name: ev.name, desc: ev.desc, effect: effect, note: note };
@@ -378,6 +383,23 @@
     return CFG.NARRATIVE[style] || CFG.NARRATIVE['重平衡'];
   }
 
+  // 情境观察（与风格叙事并存，按条件附加，点题"人类还剩什么"）
+  // player：当前玩家（techDebt 为跨局累计，未含本局）；settlement：本局结算
+  function deriveObservation(player, settlement) {
+    var debt = (player ? (player.techDebt || 0) : 0) + (settlement ? (settlement.techDebt || 0) : 0);
+    var aiVersion = player ? (player.aiVersion || 1) : 1;
+    // 连续成功局数（从 history 尾部往前数）
+    var streak = 0;
+    var h = player ? (player.history || []) : [];
+    for (var i = h.length - 1; i >= 0; i--) {
+      if (h[i].success) streak++; else break;
+    }
+    if (debt > 15) return CFG.NARRATIVE['重负债'] || '';
+    if (aiVersion >= 3) return CFG.NARRATIVE['重替代'] || '';
+    if (streak >= 3) return CFG.NARRATIVE['重默契'] || '';
+    return '';
+  }
+
   // ---------- 11. 多结局判定（按累计历史） ----------
   function pickEnding(history) {
     var h = history || [];
@@ -393,8 +415,16 @@
     var avgQuality = totalQuality / rounds;
     var avgDebt = totalDebt / rounds;
 
+    // 早期崩盘但后期翻盘 → 涅槃重生（优先于 collapse）
+    var earlyDebt = (h[0].debtAdded || 0) + (h[1] ? (h[1].debtAdded || 0) : 0);
+    var recent = h.slice(-2);
+    var recentGood = recent.length >= 2 &&
+      recent.every(function (r) { return r.success && (r.qualityRatio || 0) >= 0.6; });
+    if (rounds >= 4 && earlyDebt > 12 && recentGood) return CFG.ENDINGS.phoenix;
+
     if (avgDebt > 12 && speedRounds >= rounds * 0.6) return CFG.ENDINGS.collapse;     // 长期欠债+重速度
     if (avgQuality >= 0.6 && avgDebt <= 6) return CFG.ENDINGS.master;                  // 稳且优
+    if (speedRounds >= rounds * 0.6 && avgQuality < 0.5 && rounds >= 4) return CFG.ENDINGS.automaton; // 流水线幽灵
     if (speedRounds >= rounds * 0.6 && avgDebt <= 8) return CFG.ENDINGS.lineworker;    // 快但没崩
     if (balancedRounds >= rounds * 0.5) return CFG.ENDINGS.awakened;                   // 平衡觉醒
     return CFG.ENDINGS.rookie;
@@ -451,6 +481,7 @@
     runExecution: runExecution,
     settleProject: settleProject,
     deriveNarrative: deriveNarrative,
+    deriveObservation: deriveObservation,
     pickEnding: pickEnding,
     checkUnlocks: checkUnlocks,
     advancePlayer: advancePlayer,

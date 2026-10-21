@@ -42,6 +42,34 @@
   function app() { return document.getElementById('app'); }
   function clear() { app().innerHTML = ''; }
 
+  // 常驻"退出本局"处理器（由 main 在 boot 时注入）
+  var exitHandler = null;
+  function setExitHandler(fn) { exitHandler = fn; }
+
+  // 任意屏底部常驻"退出本局回标题"按钮（标题屏除外）
+  function appendExit() {
+    if (!exitHandler) return;
+    var btn = el('button', { class: 'btn ghost exit-btn', text: '🏠 退出本局回标题',
+      onclick: function () { showExitConfirm(); } });
+    app().appendChild(el('div', { class: 'card center' }, [btn]));
+  }
+
+  // 应用内确认弹层（挂在 body，不破坏当前屏；退出时由 exitHandler 清理运行中的定时器）
+  function showExitConfirm() {
+    var overlay = el('div', { class: 'modal-overlay' }, [
+      el('div', { class: 'modal-card' }, [
+        el('p', { class: 'modal-text', text: '确认退出本局？当前进度将不保存。' }),
+        el('div', { class: 'modal-actions' }, [
+          el('button', { class: 'btn ghost', text: '取消', onclick: function () { closeModal(overlay); } }),
+          el('button', { class: 'btn primary', text: '确认退出',
+            onclick: function () { closeModal(overlay); if (exitHandler) exitHandler(); } })
+        ])
+      ])
+    ]);
+    document.body.appendChild(overlay);
+  }
+  function closeModal(node) { if (node && node.parentNode) node.parentNode.removeChild(node); }
+
   // 顶部状态条（种子 / 局数 / 口碑 / 经验 / 技术债）
   function renderStatusBar(player, seed) {
     var bar = el('div', { class: 'statusbar' }, [
@@ -86,6 +114,7 @@
       el('button', { class: 'btn primary', text: '✂ 接下并拆解任务', onclick: onAccept })
     ]);
     app().appendChild(card);
+    appendExit();
   }
 
   function kv(k, v) {
@@ -137,6 +166,7 @@
 
     var go = el('button', { class: 'btn primary big', text: '🚀 开始执行（掷 trait / 事件）', onclick: function () { onExecute(strat); } });
     app().appendChild(el('div', { class: 'card center' }, [go]));
+    appendExit();
   }
 
   // ---------- 执行过程（滚动日志，逐任务揭示） ----------
@@ -150,11 +180,14 @@
       el('div', { id: 'execLog', class: 'log' })
     ]);
     app().appendChild(box);
+    appendExit();
     var log = document.getElementById('execLog');
 
     var idx = 0;
     var results = result.taskResults;
     var timer = setInterval(function () {
+      // 守卫：若已退出本局（clear() 移除了 #execLog），停止定时器，避免对已卸载节点操作
+      if (!document.getElementById('execLog')) { clearInterval(timer); return; }
       if (idx >= results.length) {
         clearInterval(timer);
         log.appendChild(el('p', { class: 'log-done', text: '✅ 全部任务执行完毕，进入结算…' }));
@@ -209,6 +242,7 @@
     app().appendChild(el('div', { class: 'card center' }, [
       el('button', { class: 'btn primary', text: '🔍 看归因反馈', onclick: onNext })
     ]));
+    appendExit();
   }
 
   // ---------- 归因反馈面板 ----------
@@ -244,16 +278,20 @@
     app().appendChild(el('div', { class: 'card center' }, [
       el('button', { class: 'btn primary', text: '🌐 时代观察 & 结局', onclick: onNext })
     ]));
+    appendExit();
   }
 
   // ---------- 时代观察 + 结局 ----------
-  function showNarrative(player, seed, narrativeText, ending, onNext) {
+  function showNarrative(player, seed, narrativeText, observation, ending, onNext) {
     clear();
     app().appendChild(renderStatusBar(player, seed));
     var card = el('div', { class: 'card' }, [
       el('h2', { text: '🌐 时代观察' }),
       el('p', { class: 'narrative', text: narrativeText })
     ]);
+    if (observation) {
+      card.appendChild(el('p', { class: 'observation', text: '🪞 ' + observation }));
+    }
     app().appendChild(card);
     var endCard = el('div', { class: 'card ending' }, [
       el('h2', { text: ending.title }),
@@ -263,6 +301,7 @@
     app().appendChild(el('div', { class: 'card center' }, [
       el('button', { class: 'btn primary', text: '🌱 成长 & 下一局', onclick: onNext })
     ]));
+    appendExit();
   }
 
   // ---------- 成长 + 下一局 ----------
@@ -287,6 +326,7 @@
     app().appendChild(el('div', { class: 'card center' }, [
       el('button', { class: 'btn primary big', text: '▶ 开始下一局', onclick: onNext })
     ]));
+    appendExit();
   }
 
   function describeUnlocks(ids) {
@@ -305,6 +345,7 @@
     showAttribution: showAttribution,
     showNarrative: showNarrative,
     showGrowth: showGrowth,
+    setExitHandler: setExitHandler,
     el: el
   };
 })(typeof window !== 'undefined' ? window : this);

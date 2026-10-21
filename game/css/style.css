@@ -121,6 +121,26 @@ h3 { font-size: 16px; margin: 4px 0 10px; color: #2563eb; }
 
 /* 时代观察 / 结局 */
 .narrative { font-size: 16px; color: #334155; background: #f1f5f9; padding: 12px 14px; border-radius: 10px; border-left: 4px solid #0ea5e9; }
+.observation { font-size: 15px; color: #475569; background: #fff7ed; padding: 10px 14px; border-radius: 10px; border-left: 4px solid #f59e0b; margin-top: 10px; }
 .ending { border-left: 4px solid #8b5cf6; background: #faf5ff; }
 .ending-text { color: #4c1d95; font-size: 15px; }
 .unlock-note { margin-top: 10px; color: #15803d; font-weight: 600; }
+
+/* 常驻退出按钮 */
+.btn.ghost { background: #fff; border: 1px solid #cbd5e1; color: #64748b; }
+.btn.ghost:hover { background: #f1f5f9; border-color: #94a3b8; }
+.exit-btn { margin-top: 4px; }
+
+/* 确认弹层 */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 50;
+}
+.modal-card {
+  background: #fff; border-radius: 14px; padding: 22px 24px;
+  max-width: 340px; text-align: center; box-shadow: 0 10px 30px rgba(15,23,42,.25);
+}
+.modal-text { font-size: 15px; color: #334155; margin: 0 0 16px; }
+.modal-actions { display: flex; gap: 10px; justify-content: center; }

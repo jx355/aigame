@@ -289,6 +289,40 @@ section('13. 归因面板 & 风格分析');
 }
 
 // =================================================================
+section('14. 内容扩充（第二轮）');
+{
+  check('池规模达标：项目16/trait10/事件18/结局7/叙事6',
+    DATA.PROJECT_POOL.length === 16 && DATA.TRAIT_POOL.length === 10 &&
+    DATA.EVENT_POOL.length === 18 && Object.keys(DATA.ENDINGS).length === 7 &&
+    Object.keys(DATA.NARRATIVE).length === 6,
+    `项目${DATA.PROJECT_POOL.length} trait${DATA.TRAIT_POOL.length} 事件${DATA.EVENT_POOL.length} 结局${Object.keys(DATA.ENDINGS).length} 叙事${Object.keys(DATA.NARRATIVE).length}`);
+  const tw = DATA.EVENT_POOL.find(e => e.id === 'techwave');
+  check('新事件 techwave 注册为条件事件', tw && tw.conditional === true);
+  const evLow = Logic.rollEvent({ next: () => 0, int: () => 0, pick: () => tw, chance: () => true }, { strategy: ALL_OFF, debt: 2 });
+  const evHigh = Logic.rollEvent({ next: () => 0, int: () => 0, pick: () => tw, chance: () => true }, { strategy: ALL_OFF, debt: 20 });
+  check('techwave 低债(<5) → 口碑-1', evLow.effect.reputation === -1, evLow.note);
+  check('techwave 高债(>=5) → 口碑-2', evHigh.effect.reputation === -2, evHigh.note);
+  check('情境观察 跨局债>15 → 重负债', Logic.deriveObservation({ techDebt: 16, aiVersion: 1, history: [{ success: true }] }, { techDebt:2 }) === DATA.NARRATIVE['重负债']);
+  check('情境观察 AI版本>=3 → 重替代', Logic.deriveObservation({ techDebt: 0, aiVersion: 3, history: [] }, { techDebt: 0 }) === DATA.NARRATIVE['重替代']);
+  check('情境观察 连胜>=3 → 重默契', Logic.deriveObservation({ techDebt: 0, aiVersion: 1, history: [{ success: true }, { success: true }, { success: true }] }, { techDebt: 0 }) === DATA.NARRATIVE['重默契']);
+  check('情境观察 普通情况 → 空串', Logic.deriveObservation({ techDebt: 0, aiVersion: 1, history: [] }, { techDebt: 0 }) === '');
+  const phoenix = Logic.pickEnding([
+    { style: '重速度', success: false, debtAdded: 9, qualityRatio: 0.2 },
+    { style: '重速度', success: false, debtAdded: 9, qualityRatio: 0.2 },
+    { style: '重质量', success: true, debtAdded: 1, qualityRatio: 0.7 },
+    { style: '重质量', success: true, debtAdded: 1, qualityRatio: 0.8 }
+  ]);
+  check('结局 早崩后翻盘 → 涅槃重生', phoenix.title.indexOf('涅槃重生') >= 0, phoenix.title);
+  const automaton = Logic.pickEnding([
+    { style: '重速度', success: true, debtAdded: 2, qualityRatio: 0.3 },
+    { style: '重速度', success: true, debtAdded: 2, qualityRatio: 0.3 },
+    { style: '重速度', success: true, debtAdded: 2, qualityRatio: 0.3 },
+    { style: '重速度', success: true, debtAdded: 2, qualityRatio: 0.4 }
+  ]);
+  check('结局 重速度&低质 → 数字流水线幽灵', automaton.title.indexOf('数字流水线幽灵') >= 0, automaton.title);
+}
+
+// =================================================================
 section('真实输出样例（供人工回归核对）');
 {
   const balanced = runWith('S', { prompt: '省', review: '开', test: '开', refactor: '关' }).result.settlement;

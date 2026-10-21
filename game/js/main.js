@@ -27,6 +27,14 @@
   // ---------- 启动 ----------
   function boot() {
     game.player = clonePlayer(window.GAME_DATA.INIT_PLAYER);
+    UI.setExitHandler(toTitle); // 任意屏常驻"退出本局回标题"
+    UI.showTitle(onStart);
+  }
+
+  // ---------- 退出本局，回标题（放弃当前进度，重置运行时） ----------
+  function toTitle() {
+    game.player = clonePlayer(window.GAME_DATA.INIT_PLAYER);
+    game.result = null;
     UI.showTitle(onStart);
   }
 
@@ -88,6 +96,8 @@
   // ---------- 归因 → 时代观察 + 结局 ----------
   function onNarrativeNext() {
     game.narrative = L.deriveNarrative(game.result.style);
+    // 情境观察：按跨局累计债 / AI 版本 / 连胜 附加点题文案
+    var observation = L.deriveObservation(game.player, game.result.settlement);
     // 结局要反映"刚玩完这局"，故把本局临时并入历史再判定（不污染真实历史）
     var s = game.result.settlement;
     var tempHistory = game.player.history.concat([{
@@ -95,7 +105,7 @@
       debtAdded: s.techDebt, qualityRatio: s.qualityRatio, defects: s.defects
     }]);
     game.ending = L.pickEnding(tempHistory);
-    UI.showNarrative(game.player, game.seed, game.narrative, game.ending, onGrowthNext);
+    UI.showNarrative(game.player, game.seed, game.narrative, observation, game.ending, onGrowthNext);
   }
 
   // ---------- 时代观察 → 成长 + 下一局 ----------

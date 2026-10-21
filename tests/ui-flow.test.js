@@ -32,6 +32,7 @@ class FakeNode {
   }
   setAttribute(k, v) { this.attributes[k] = String(v); }
   getAttribute(k) { return this.attributes[k]; }
+  removeChild(c) { const i = this.children.indexOf(c); if (i >= 0) { this.children.splice(i, 1); if (c) c.parentNode = null; } return c; }
   set id(v) { this.attributes.id = v; }
   get id() { return this.attributes.id; }
   addEventListener(type, fn) { (this.listeners[type] = this.listeners[type] || []).push(fn); }
@@ -57,10 +58,21 @@ function findHeading(node) {
   for (const c of node.children) if (c instanceof FakeNode) { const r = findHeading(c); if (r) return r; }
   return null;
 }
+function findButtonByClass(node, cls) {
+  if (node.tagName === 'button' && node.classList.contains(cls)) return node;
+  for (const c of node.children) if (c instanceof FakeNode) { const r = findButtonByClass(c, cls); if (r) return r; }
+  return null;
+}
+function findButtonByText(node, txt) {
+  if (node.tagName === 'button' && (node.textContent || '').indexOf(txt) >= 0) return node;
+  for (const c of node.children) if (c instanceof FakeNode) { const r = findButtonByText(c, txt); if (r) return r; }
+  return null;
+}
 
 const APP = new FakeNode('div'); APP.attributes.id = 'app';
 const document = {
   readyState: 'complete',
+  body: new FakeNode('body'),
   getElementById(id) { return id === 'app' ? APP : APP.findById(id); },
   addEventListener(type, fn) { if (type === 'DOMContentLoaded') fn(); },
   createElement(tag) { return new FakeNode(tag); }
@@ -105,6 +117,11 @@ for (let i = 0; i < STEPS.length; i++) {
     console.log('❌ [' + STEPS[i] + '] 当前屏="' + before + '" 未找到主按钮 → 卡死（无法继续/退回）');
     ok = false; break;
   }
+  // 操作动线：除标题屏外，每屏应有常驻"退出本局回标题"按钮
+  if (i >= 1) {
+    const ex = findButtonByClass(APP, 'exit-btn');
+    if (!ex) { console.log('❌ [' + STEPS[i] + '] 屏="' + before + '" 缺少常驻退出按钮'); ok = false; }
+  }
   let err = null;
   try { btn.click(); } catch (e) { err = e; }
   const after = findHeading(APP);
@@ -113,5 +130,26 @@ for (let i = 0; i < STEPS.length; i++) {
   console.log((switched ? '✅' : '❌') + ' [' + STEPS[i] + '] ' + before + ' → ' + after);
   if (!switched) { ok = false; break; }
 }
-console.log(ok ? '\n结果：UI 主按钮链路完整，8 步全部正常切换。' : '\n结果：发现卡死点，见上方 ❌。');
+
+// ---------------- 退出本局回标题 流程（覆盖用户"没法退回"隐患） ----------------
+console.log('\n=== 退出本局回标题 流程 ===');
+// 主流程第 8 步已回到第 2 局"项目"屏
+const exitBtn = findButtonByClass(APP, 'exit-btn');
+if (!exitBtn) {
+  console.log('❌ 当前屏(第2局项目) 未找到常驻退出按钮'); ok = false;
+} else {
+  exitBtn.click(); // 弹出确认层（挂在 document.body）
+  const confirm = findButtonByText(document.body, '确认退出');
+  if (!confirm) {
+    console.log('❌ 确认弹层未出现（document.body）'); ok = false;
+  } else {
+    confirm.click(); // 回标题
+    const h = findHeading(APP);
+    const titleOk = h && h.indexOf('AI 副驾') >= 0;
+    console.log((titleOk ? '✅' : '❌') + ' 退出后回到标题: ' + h);
+    if (!titleOk) ok = false;
+  }
+}
+
+console.log(ok ? '\n结果：UI 主按钮链路完整 + 每屏常驻退出按钮 + 退出回标题 全部通过。' : '\n结果：发现卡死点/缺失，见上方 ❌。');
 process.exit(ok ? 0 : 1);
