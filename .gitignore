@@ -1,0 +1,14 @@
+# 依赖与缓存
+node_modules/
+__pycache__/
+*.pyc
+
+# 运行产物
+*.log
+.DS_Store
+
+# 测试临时目录
+tests/.tmp/
+
+# 工作区内部数据（AI 工作日志等，不进公开仓库）
+.workbuddy/

@@ -1,0 +1,126 @@
+/* style.css —— 纯样式（emoji + CSS，零图片资源），浅色主题、整洁可读 */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+  background: #f5f7fa;
+  color: #1f2933;
+  line-height: 1.6;
+}
+
+#app {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* 顶部状态条 */
+.statusbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  background: #fff;
+  border: 1px solid #e3e8ef;
+  border-radius: 10px;
+}
+.chip {
+  font-size: 13px;
+  background: #eef2f7;
+  color: #334155;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* 卡片 */
+.card {
+  background: #fff;
+  border: 1px solid #e3e8ef;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+.card.center { text-align: center; }
+
+h1 { font-size: 26px; margin: 6px 0 10px; }
+h2 { font-size: 20px; margin: 4px 0 12px; }
+h3 { font-size: 16px; margin: 4px 0 10px; color: #2563eb; }
+.sub { color: #475569; font-size: 15px; }
+.hint { color: #94a3b8; font-size: 13px; margin: 6px 0; }
+
+/* 按钮 */
+.btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 15px;
+  cursor: pointer;
+  background: #e2e8f0;
+  color: #1f2933;
+  transition: transform .05s ease, background .15s ease;
+}
+.btn:hover { background: #cbd5e1; }
+.btn:active { transform: translateY(1px); }
+.btn.primary { background: #2563eb; color: #fff; }
+.btn.primary:hover { background: #1d4ed8; }
+.btn.big { font-size: 17px; padding: 12px 26px; }
+
+/* 项目卡：键值对 */
+.kv { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
+.kv-row { display: flex; gap: 10px; }
+.kv-k { width: 110px; color: #64748b; flex-shrink: 0; }
+.kv-v { color: #0f172a; font-weight: 500; }
+
+/* 决策：任务卡 + 维度开关 */
+.task-card { border-left: 4px solid #2563eb; }
+.dim-row { display: flex; align-items: center; gap: 10px; margin: 8px 0; flex-wrap: wrap; }
+.dim-label { width: 72px; color: #475569; font-size: 14px; flex-shrink: 0; }
+.toggle {
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #475569;
+}
+.toggle:hover { border-color: #94a3b8; }
+.toggle.on { background: #2563eb; color: #fff; border-color: #2563eb; font-weight: 600; }
+
+/* 执行日志 */
+.log { display: flex; flex-direction: column; gap: 10px; }
+.log-item { border: 1px dashed #e3e8ef; border-radius: 8px; padding: 8px 10px; background: #fafcff; }
+.log-head { font-weight: 600; color: #334155; }
+.log-deltas { margin: 4px 0; }
+.log-note { font-size: 13px; color: #64748b; }
+.log-done { color: #16a34a; font-weight: 600; }
+.d { display: inline-block; margin-right: 10px; font-size: 13px; font-variant-numeric: tabular-nums; }
+.d.pos { color: #16a34a; }
+.d.neg { color: #dc2626; }
+.d.zero { color: #94a3b8; }
+
+/* 结算评级 */
+.grade { font-size: 18px; font-weight: 700; padding: 8px 12px; border-radius: 8px; display: inline-block; margin-bottom: 8px; }
+.grade.pos { background: #dcfce7; color: #15803d; }
+.grade.zero { background: #fef9c3; color: #a16207; }
+.grade.neg { background: #fee2e2; color: #b91c1c; }
+
+/* 归因面板 */
+.attr-item { border-top: 1px solid #eef2f7; padding: 8px 0; }
+.attr-title { font-weight: 600; color: #334155; }
+.attr-deltas { margin: 3px 0; }
+.attr-note { font-size: 13px; color: #64748b; }
+.attr-global { border-top: 2px solid #cbd5e1; padding: 10px 0 4px; }
+.attr-global ul, .card ul { margin: 6px 0; padding-left: 20px; }
+.attr-global li, .card li { margin: 3px 0; }
+
+/* 时代观察 / 结局 */
+.narrative { font-size: 16px; color: #334155; background: #f1f5f9; padding: 12px 14px; border-radius: 10px; border-left: 4px solid #0ea5e9; }
+.ending { border-left: 4px solid #8b5cf6; background: #faf5ff; }
+.ending-text { color: #4c1d95; font-size: 15px; }
+.unlock-note { margin-top: 10px; color: #15803d; font-weight: 600; }
